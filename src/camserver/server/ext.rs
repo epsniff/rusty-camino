@@ -17,14 +17,16 @@ use std::io;
 use std::path::{Path, PathBuf};
 use tokio_fs::DirEntry;
 
+use crate::camserver::server::types::ServerResult;
+
 /// The entry point to extensions. Extensions are given both the request and the
 /// response result from regular file serving, and have the opportunity to
 /// replace the response with their own response.
 pub async fn serve(
     config: Config, 
     req: Request<Body>,
-    resp: super::ServerResult<Response<Body>>,
-) -> super::ServerResult<Response<Body>> {
+    resp: ServerResult<Response<Body>>,
+) -> ServerResult<Response<Body>> {
     trace!("checking extensions");
 
     if !config.use_extensions {
@@ -45,7 +47,7 @@ pub async fn serve(
             maybe_convert_mime_type_to_text(&req, &mut resp);
             Ok(resp)
         }
-        Err(super::Error::Io(e)) => {
+        Err(self::Error::Io(e)) => {
             // If the requested file was not found, then try doing a directory listing.
             if e.kind() == io::ErrorKind::NotFound {
                 let list_dir_resp = maybe_list_dir(&config.root_dir, &path).await?;
@@ -53,10 +55,10 @@ pub async fn serve(
                 if let Some(f) = list_dir_resp {
                     Ok(f)
                 } else {
-                    Err(super::Error::from(e))
+                    Err(self::Error::from(e))
                 }
             } else {
-                Err(super::Error::from(e))
+                Err(self::Error::from(e))
             }
         }
         r => r,
@@ -77,7 +79,7 @@ async fn md_path_to_html(path: &Path) -> Result<Response<Body>> {
     options.ext_header_ids = Some("user-content-".to_string());
 
     let buf = tokio::fs::read(path).await?;
-    let s = String::from_utf8(buf).map_err(|_| Error::MarkdownUtf8)?;
+    let s = String::from_utf8(buf).map_err(|_| ExtError::MarkdownUtf8)?;
     let html = comrak::markdown_to_html(&s, &options);
     let cfg = HtmlCfg {
         title: String::new(),
@@ -243,13 +245,13 @@ fn make_dir_list_body(root_dir: &Path, paths: &[PathBuf]) -> Result<String> {
     Ok(super::render_html(cfg)?)
 }
 
-pub type Result<T> = std::result::Result<T, Error>;
+// pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Display)]
-pub enum Error {
+pub enum ExtError { 
     // blanket "pass-through" error types
     #[display(fmt = "engine error")]
-    Engine(Box<super::Error>),
+    Engine(Box<self::Error>),
 
     #[display(fmt = "HTTP error")]
     Http(http::Error),
@@ -283,8 +285,8 @@ impl StdError for Error {
     }
 }
 
-impl From<super::Error> for Error {
-    fn from(e: super::Error) -> Error {
+impl From<self::Error> for Error {
+    fn from(e: self::Error) -> Error {
         Error::Engine(Box::new(e))
     }
 }
