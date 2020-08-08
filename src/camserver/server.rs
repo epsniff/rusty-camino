@@ -29,7 +29,6 @@ use clap::ArgMatches;
 // principle HTTP server behavior is not obscured.
 // use super::ext; // Doesn't work correctly as a sibling module 
 mod ext;
-mod types;
 
 // fn main() {
 //     // Set up error handling immediately
@@ -82,7 +81,7 @@ pub struct Config {
 //    };
 // }
 
-pub fn run_cam_server(_matches: &ArgMatches) -> types::ServerResult<()>{
+pub fn run_cam_server(_matches: &ArgMatches) -> ServerResult<()>{
     // Initialize logging, and log the "info" level for this crate only, unless
     // the environment contains `RUST_LOG`.
     let env = Env::new().default_filter_or("basic_http_server=info");
@@ -113,11 +112,11 @@ pub fn run_cam_server(_matches: &ArgMatches) -> types::ServerResult<()>{
 
             // Handle the request, returning a Future of Response,
             // and map it to a Future of Result of Response.
-            serve(config, req).map(Ok::<_, types::Error>)
+            serve(config, req).map(Ok::<_, Error>)
         });
 
         // Convert the concrete (non-future) service function to a Future of Result.
-        future::ok::<_, types::Error>(service)
+        future::ok::<_, Error>(service)
     });
 
     // Create a Hyper Server, binding to an address, and use
@@ -147,7 +146,7 @@ async fn serve(config: Config, req: Request<Body>) -> Response<Body> {
 
 /// Handle all types of requests, but don't deal with transforming internal
 /// errors to HTTP error responses.
-async fn serve_or_error(config: Config, req: Request<Body>) -> types::ServerResult<Response<Body>> {
+async fn serve_or_error(config: Config, req: Request<Body>) -> ServerResult<Response<Body>> {
     // This server only supports the GET method. Return an appropriate
     // response otherwise.
     if let Some(resp) = handle_unsupported_request(&req) {
@@ -164,7 +163,7 @@ async fn serve_or_error(config: Config, req: Request<Body>) -> types::ServerResu
 }
 
 /// Serve static files from a root directory.
-async fn serve_file(req: &Request<Body>, root_dir: &PathBuf) -> types::ServerResult<Response<Body>> {
+async fn serve_file(req: &Request<Body>, root_dir: &PathBuf) -> ServerResult<Response<Body>> {
     // First, try to do a redirect. If that doesn't happen, then find the path
     // to the static file we want to serve - which may be `index.html` for
     // directories - and send a response containing that file.
@@ -194,7 +193,7 @@ async fn serve_file(req: &Request<Body>, root_dir: &PathBuf) -> types::ServerRes
 /// the case for URL `docs/`.
 ///
 /// This seems to match the behavior of other static web servers.
-fn try_dir_redirect(req: &Request<Body>, root_dir: &PathBuf) -> types::ServerResult<Option<Response<Body>>> {
+fn try_dir_redirect(req: &Request<Body>, root_dir: &PathBuf) -> ServerResult<Option<Response<Body>>> {
     if req.uri().path().ends_with("/") {
         return Ok(None);
     }
@@ -220,7 +219,7 @@ fn try_dir_redirect(req: &Request<Body>, root_dir: &PathBuf) -> types::ServerRes
         .header(header::LOCATION, new_loc)
         .body(Body::empty())
         .map(Some)
-        .map_err(types::Error::from)
+        .map_err(Error::from)
 }
 
 /// Construct a 200 response with the file as the body, streaming it to avoid
@@ -228,7 +227,7 @@ fn try_dir_redirect(req: &Request<Body>, root_dir: &PathBuf) -> types::ServerRes
 ///
 /// If the I/O here fails then an error future will be returned, and `serve`
 /// will convert it into the appropriate HTTP error response.
-async fn respond_with_file(path: PathBuf) -> types::ServerResult<Response<Body>> {
+async fn respond_with_file(path: PathBuf) -> ServerResult<Response<Body>> {
     let mime_type = file_path_mime(&path);
 
     let file = File::open(path).await?;
@@ -266,7 +265,7 @@ fn file_path_mime(file_path: &Path) -> mime::Mime {
 
 /// Find the local path for a request URI, converting directories to the
 /// `index.html` file.
-fn local_path_with_maybe_index(uri: &Uri, root_dir: &Path) -> types::ServerResult<PathBuf> {
+fn local_path_with_maybe_index(uri: &Uri, root_dir: &Path) -> ServerResult<PathBuf> {
     local_path_for_request(uri, root_dir).map(|mut p: PathBuf| {
         if p.is_dir() {
             p.push("index.html");
@@ -279,7 +278,7 @@ fn local_path_with_maybe_index(uri: &Uri, root_dir: &Path) -> types::ServerResul
 }
 
 /// Map the request's URI to a local path
-fn local_path_for_request(uri: &Uri, root_dir: &Path) -> types::ServerResult<PathBuf> {
+fn local_path_for_request(uri: &Uri, root_dir: &Path) -> ServerResult<PathBuf> {
     debug!("raw URI: {}", uri);
 
     let request_path = uri.path();
@@ -296,7 +295,7 @@ fn local_path_for_request(uri: &Uri, root_dir: &Path) -> types::ServerResult<Pat
         p
     } else {
         error!("non utf-8 URL: {}", request_path);
-        return Err(types::Error::UriNotUtf8);
+        return Err(Error::UriNotUtf8);
     };
 
     // Append the requested path to the root directory
@@ -305,7 +304,7 @@ fn local_path_for_request(uri: &Uri, root_dir: &Path) -> types::ServerResult<Pat
         path.push(&request_path[1..]);
     } else {
         warn!("found non-absolute path {}", request_path);
-        return Err(types::Error::UriNotAbsolute);
+        return Err(Error::UriNotAbsolute);
     }
 
     debug!("URL · path : {} · {}", uri, path.display());
@@ -315,7 +314,7 @@ fn local_path_for_request(uri: &Uri, root_dir: &Path) -> types::ServerResult<Pat
 
 /// Create an error response if the request contains unsupported methods,
 /// headers, etc.
-fn handle_unsupported_request(req: &Request<Body>) -> Option<types::ServerResult<Response<Body>>> {
+fn handle_unsupported_request(req: &Request<Body>) -> Option<ServerResult<Response<Body>>> {
     get_unsupported_request_message(req)
         .map(|unsup| make_error_response_from_code_and_headers(unsup.code, unsup.headers))
 }
@@ -342,7 +341,7 @@ fn get_unsupported_request_message(req: &Request<Body>) -> Option<Unsupported> {
 }
 
 /// Turn any errors into an HTTP error response.
-fn transform_error(resp: types::ServerResult<Response<Body>>) -> Response<Body> {
+fn transform_error(resp: ServerResult<Response<Body>>) -> Response<Body> {
     match resp {
         Ok(r) => r,
         Err(e) => {
@@ -360,17 +359,17 @@ fn transform_error(resp: types::ServerResult<Response<Body>>) -> Response<Body> 
 }
 
 /// Convert an error to an HTTP error response future, with correct response code.
-fn make_error_response(e: types::Error) -> types::ServerResult<Response<Body>> {
+fn make_error_response(e: Error) -> ServerResult<Response<Body>> {
     let resp = match e {
-        types::Error::Io(e) => make_io_error_response(e)?,
-        types::Error::Ext(ext::Error::Io(e)) => make_io_error_response(e)?,
+        Error::Io(e) => make_io_error_response(e)?,
+        Error::Ext(ext::Error::Io(e)) => make_io_error_response(e)?,
         e => make_internal_server_error_response(e)?,
     };
     Ok(resp)
 }
 
 /// Convert an error into a 500 internal server error, and log it.
-fn make_internal_server_error_response(err: types::Error) -> types::ServerResult<Response<Body>> {
+fn make_internal_server_error_response(err: Error) -> ServerResult<Response<Body>> {
     log_error_chain(&err);
     let resp = make_error_response_from_code(StatusCode::INTERNAL_SERVER_ERROR)?;
     Ok(resp)
@@ -378,19 +377,19 @@ fn make_internal_server_error_response(err: types::Error) -> types::ServerResult
 
 /// Handle the one special IO error (file not found) by returning a 404, otherwise
 /// return a 500.
-fn make_io_error_response(error: io::Error) -> types::ServerResult<Response<Body>> {
+fn make_io_error_response(error: io::Error) -> ServerResult<Response<Body>> {
     let resp = match error.kind() {
         io::ErrorKind::NotFound => {
             debug!("{}", error);
             make_error_response_from_code(StatusCode::NOT_FOUND)?
         }
-        _ => make_internal_server_error_response(types::Error::Io(error))?,
+        _ => make_internal_server_error_response(Error::Io(error))?,
     };
     Ok(resp)
 }
 
 /// Make an error response given an HTTP status code.
-fn make_error_response_from_code(status: StatusCode) -> types::ServerResult<Response<Body>> {
+fn make_error_response_from_code(status: StatusCode) -> ServerResult<Response<Body>> {
     make_error_response_from_code_and_headers(status, HeaderMap::new())
 }
 
@@ -398,14 +397,14 @@ fn make_error_response_from_code(status: StatusCode) -> types::ServerResult<Resp
 fn make_error_response_from_code_and_headers(
     status: StatusCode,
     headers: HeaderMap,
-) -> types::ServerResult<Response<Body>> {
+) -> ServerResult<Response<Body>> {
     let body = render_error_html(status)?;
     let resp = html_str_to_response_with_headers(body, status, headers)?;
     Ok(resp)
 }
 
 /// Make an HTTP response from a HTML string.
-fn html_str_to_response(body: String, status: StatusCode) -> types::ServerResult<Response<Body>> {
+fn html_str_to_response(body: String, status: StatusCode) -> ServerResult<Response<Body>> {
     html_str_to_response_with_headers(body, status, HeaderMap::new())
 }
 
@@ -414,7 +413,7 @@ fn html_str_to_response_with_headers(
     body: String,
     status: StatusCode,
     headers: HeaderMap,
-) -> types::ServerResult<Response<Body>> {
+) -> ServerResult<Response<Body>> {
     let mut builder = Response::builder();
 
     builder.headers_mut().map(|h| h.extend(headers));
@@ -424,7 +423,7 @@ fn html_str_to_response_with_headers(
         .header(header::CONTENT_LENGTH, body.len())
         .header(header::CONTENT_TYPE, mime::TEXT_HTML.as_ref())
         .body(Body::from(body))
-        .map_err(types::Error::from)
+        .map_err(Error::from)
 }
 
 /// A handlebars HTML template.
@@ -439,19 +438,109 @@ struct HtmlCfg {
 }
 
 /// Render an HTML page with handlebars, the template and the configuration data.
-fn render_html(cfg: HtmlCfg) -> types::ServerResult<String> {
+fn render_html(cfg: HtmlCfg) -> ServerResult<String> {
     let reg = Handlebars::new();
     let rendered = reg
         .render_template(HTML_TEMPLATE, &cfg)
-        .map_err(types::Error::TemplateRender)?;
+        .map_err(Error::TemplateRender)?;
     Ok(rendered)
 }
 
 /// Render an HTML page from an HTTP status code
-fn render_error_html(status: StatusCode) -> types::ServerResult<String> {
+fn render_error_html(status: StatusCode) -> ServerResult<String> {
     render_html(HtmlCfg {
         title: format!("{}", status),
         body: String::new(),
     })
 }
 
+/// A custom `Result` typedef
+pub type ServerResult<T> = std::result::Result<T, Error>;
+
+/// The basic-http-server error type.
+///
+/// This is divided into two types of errors: "semantic" errors and "blanket"
+/// errors. Semantic errors are custom to the local application semantics and
+/// are usually preferred, since they add context and meaning to the error
+/// chain. They don't require boilerplate `From` implementations, but do require
+/// `map_err` to create when they have interior `causes`.
+///
+/// Blanket errors are just wrappers around other types, like `Io(io::Error)`.
+/// These are common errors that occur in many places so are easier to code and
+/// maintain, since e.g. every occurrence of an I/O error doesn't need to be
+/// given local semantics.
+///
+/// The criteria of when to use which type of error variant, and their pros and
+/// cons, aren't obvious.
+///
+/// These errors use `derive(Display)` from the `derive-more` crate to reduce
+/// boilerplate.
+#[derive(Debug, Display)]
+pub enum Error {
+    // blanket "pass-through" error types
+    #[display(fmt = "Extension error")]
+    Ext(ext::Error),
+
+    #[display(fmt = "HTTP error")]
+    Http(http::Error),
+
+    #[display(fmt = "Hyper error")]
+    Hyper(hyper::Error),
+
+    #[display(fmt = "I/O error")]
+    Io(io::Error),
+
+    // custom "semantic" error types
+    #[display(fmt = "failed to parse IP address")]
+    AddrParse(std::net::AddrParseError),
+
+    #[display(fmt = "failed to render template")]
+    TemplateRender(handlebars::TemplateRenderError),
+
+    #[display(fmt = "requested URI is not an absolute path")]
+    UriNotAbsolute,
+
+    #[display(fmt = "requested URI is not UTF-8")]
+    UriNotUtf8,
+}
+
+impl StdError for Error {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+        use Error::*;
+
+        match self {
+            Ext(e) => Some(e),
+            Io(e) => Some(e),
+            Http(e) => Some(e),
+            Hyper(e) => Some(e),
+            AddrParse(e) => Some(e),
+            TemplateRender(e) => Some(e),
+            UriNotAbsolute => None,
+            UriNotUtf8 => None,
+        }
+    }
+}
+
+impl From<ext::Error> for Error {
+    fn from(e: ext::Error) -> Error {
+        Error::Ext(e)
+    }
+}
+
+impl From<http::Error> for Error {
+    fn from(e: http::Error) -> Error {
+        Error::Http(e)
+    }
+}
+
+impl From<hyper::Error> for Error {
+    fn from(e: hyper::Error) -> Error {
+        Error::Hyper(e)
+    }
+}
+
+impl From<io::Error> for Error {
+    fn from(e: io::Error) -> Error {
+        Error::Io(e)
+    }
+}
