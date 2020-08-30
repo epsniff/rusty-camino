@@ -1,7 +1,6 @@
 //! A simple HTTP server, for learning and local development.
 
 use bytes::BytesMut;
-use env_logger::{Builder, Env};
 use futures::future;
 use futures::stream::StreamExt;
 use futures::FutureExt;
@@ -82,13 +81,7 @@ pub struct Config {
 // }
 
 pub fn run_cam_server(_matches: &ArgMatches) -> ServerResult<()>{
-    // Initialize logging, and log the "info" level for this crate only, unless
-    // the environment contains `RUST_LOG`.
-    let env = Env::new().default_filter_or("basic_http_server=info");
-    Builder::from_env(env)
-        .default_format_module_path(false)
-        .default_format_timestamp(false)
-        .init();
+
 
     // Create the configuration from the command line arguments. It
     // includes the IP address and port to listen on and the path to use
@@ -96,7 +89,7 @@ pub fn run_cam_server(_matches: &ArgMatches) -> ServerResult<()>{
     let config = Config::from_args();
 
     // Display the configuration to be helpful
-    info!("basic-http-server {}", env!("CARGO_PKG_VERSION"));
+    info!("rusty-camino cargo version {}", env!("CARGO_PKG_VERSION"));
     info!("addr: http://{}", config.addr);
     info!("root dir: {}", config.root_dir.display());
     info!("extensions: {}", config.use_extensions);
@@ -492,6 +485,7 @@ pub enum Error {
 
     // custom "semantic" error types
     #[display(fmt = "failed to parse IP address")]
+    #[allow(dead_code)]
     AddrParse(std::net::AddrParseError),
 
     #[display(fmt = "failed to render template")]

@@ -1,9 +1,12 @@
 
 #[macro_use]
 extern crate derive_more;
+extern crate log;
 
 use clap::{App, AppSettings, Arg, SubCommand, ArgMatches};
 use std::io::Write;
+use log::LevelFilter;
+use env_logger::Builder;
 
 mod camserver;
 use crate::camserver::run_cam_server;
@@ -11,6 +14,19 @@ use crate::camserver::run_cam_server;
 // use self::commands::*;
 
 fn main() {
+
+    // Initialize logging, and log the "info" level for this crate only, unless
+    // the environment contains `RUST_LOG`.
+    let mut builder = Builder::from_default_env();
+
+    builder //.format(|buf, record| writeln!(buf, "{}:{} -- {}", record.level(), record.target(), record.args()))
+           .filter(None, LevelFilter::Info)
+           .default_format()
+           .default_format_timestamp(true)
+           .default_format_level(true)
+           .default_format_module_path(true)
+           .init();
+
     let cli_options = App::new("rusty-camino")
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .version(env!("CARGO_PKG_VERSION"))
@@ -30,8 +46,8 @@ fn main() {
             .about("run the server")
             .arg(
                 Arg::with_name("port")
-                .short("s")
-                .long("server")
+                .short("p")
+                .long("port")
             )
         ).get_matches();
 
@@ -52,10 +68,8 @@ fn main() {
 }
 
 pub fn run_server(matches: &ArgMatches) -> Result<(), String> {
-    println!("DEBUG>>>>>> starting:");
     let _ =  match run_cam_server(matches){
      Ok(_) => {
-         println!("DEBUG>>>>>> exiting:");
          return Ok(())
      },
      Err(e) => panic!("Server exited with error:{} ", e),
