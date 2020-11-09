@@ -1,31 +1,33 @@
 [package]
 name = "rusty-camino"
 version = "0.1.0"
-authors = ["epsniff <epsniff@gmail.com>"]
+description = "rusty-camino"
+publish = false
+homepage = ""
+repository = ""
+keywords = []
+categories = ["asynchronous","web-programming","web-programming::http-server"]
+authors = ["esniff@gmail.com"]
+readme = "README.md"
+license = "MIT"
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[[bin]]
-name = "rs-camino"
-path = "src/main.rs"
-
-
 [dependencies]
-bytes = "0.4.12"
-clap = "2.33.0"
-comrak = "0.6.2"
-derive_more = "0.15.0"
-env_logger = "0.6.2"
-futures-preview = "0.3.0-alpha.19"
-handlebars = "1.1.0"
-http = "0.1.19"
-hyper = { version = "0.13.0-alpha.4", features = ["unstable-stream"] }
-log = "0.4.8"
-mime = "0.3.14"
-mime_guess = "2.0.1"
-percent-encoding = "2.1.0"
-serde = { version = "1.0.102", features = ["derive"] }
-tokio = "0.2.0-alpha.6"
-tokio-fs = "0.2.0-alpha.6"
-structopt = "0.2.18"
+hyper = "0.13"
+routerify = "1.1"
+routerify-cors = "1.1"
+routerify-json-response = "1.1"
+tokio = { version = "0.2", features = ["full"] }
+dotenv = "0.15.0"
+colored = "1.9"
+log = "0.4"
+fern = "0.5"
+chrono = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "0.8", features = ["v4"] }
+bytes = "0.5"
+reqwest = { version = "0.10", features = ["json"] }
+lazy_static = "1.4.0"
+async-trait = "0.1"
+url = "2.1"

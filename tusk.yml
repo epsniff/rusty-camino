@@ -1,0 +1,21 @@
+tasks:
+  setup:
+    run:
+      # https://github.com/passcod/cargo-watch
+      - command: cargo install cargo-watch
+      # https://github.com/rousan/releez
+      - command: cargo install releez
+  dev:
+    run:
+      - command: cargo watch --watch ./src -x run
+  start:
+    run:
+      - command: cargo build --release
+      - command: ./target/release/rusty-camino
+  deploy:
+    run:
+      - command: echo TODO call releez? #  releez 0.0.0
+
+
+
+      
