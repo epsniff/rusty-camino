@@ -1,4 +1,4 @@
-use crate::routes::api::v1::index::controllers;
+use crate::routes::indexer::v1::index::controllers;
 use hyper::{Body, Request, Response};
 use routerify::prelude::*;
 
