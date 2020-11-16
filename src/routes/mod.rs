@@ -6,13 +6,25 @@ use routerify::{Middleware, Router};
 use routerify_cors::enable_cors_all;
 
 mod api;
+mod indexer;
 
-pub fn router() -> Router<Body, crate::Error> {
+pub fn api_router() -> Router<Body, crate::Error> {
     Router::builder()
         .middleware(Middleware::pre(logger_middleware))
         .middleware(enable_cors_all())
         .get("/", home_get)
         .scope("/api", api::router())
+        .err_handler(error_handler)
+        .build()
+        .unwrap()
+}
+
+pub fn indexer_router() -> Router<Body, crate::Error> {
+    Router::builder()
+        .middleware(Middleware::pre(logger_middleware))
+        .middleware(enable_cors_all())
+        .get("/", home_get)
+        .scope("/api", indexer::router())
         .err_handler(error_handler)
         .build()
         .unwrap()

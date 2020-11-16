@@ -4,12 +4,18 @@ use hyper::header;
 use serde_json::Value;
 use url::Url;
 
-pub async fn gen_ping_message() -> crate::Result<String> {
-    Ok("Hello Ping".to_string())
+pub async fn index_batch_load(idx: &str) -> crate::Result<String> {
+    Ok(format!(
+        "index: {}, index_batch_load",
+        idx,
+    ))
 }
 
-pub async fn gen_pong_message() -> crate::Result<String> {
-    Ok("Hello Pong".to_string())
+pub async fn index_stats(idx: &str) -> crate::Result<String> {
+    Ok(format!(
+        "index: {}, index_stats",
+        idx
+    ))
 }
 
 #[allow(dead_code)]

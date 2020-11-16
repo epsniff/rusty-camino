@@ -24,7 +24,7 @@ async fn main() {
         .http2_only(false)
         .http1_writev(true)
         .tcp_sleep_on_accept_errors(true)
-        .serve(RouterService::new(routes::router()).unwrap());
+        .serve(RouterService::new(routes::api_router()).unwrap());
 
     rusty_camino::info!("API server is serving on: {}", server.local_addr());
     if let Err(e) = server.await {
