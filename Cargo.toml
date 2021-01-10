@@ -1,34 +1,35 @@
 [package]
-name = "rusty-camino"
-version = "0.1.0"
-description = "rusty-camino"
-publish = false
-homepage = ""
-repository = ""
-keywords = []
-categories = ["asynchronous","web-programming","web-programming::http-server"]
 authors = ["esniff@gmail.com"]
-readme = "README.md"
-license = "MIT"
+categories = ["asynchronous", "web-programming", "web-programming::http-server"]
+description = "rusty-camino"
 edition = "2018"
+homepage = ""
+keywords = []
+license = "MIT"
+name = "rusty-camino"
+publish = false
+readme = "README.md"
+repository = ""
+version = "0.1.0"
 
 [dependencies]
+async-trait = "0.1"
+bytes       = "0.5"
+chrono = "0.4"
+colored = "1.9"
+dotenv = "0.15.0"
+fern = "0.5"
 hyper = "0.13"
+lazy_static = "1.4.0"
+log = "0.4"
+reqwest = { version = "0.10", features = ["json"] }
 routerify = "1.1"
 routerify-cors = "1.1"
 routerify-json-response = "1.1"
-tokio = { version = "0.2", features = ["full"] }
-dotenv = "0.15.0"
-colored = "1.9"
-log = "0.4"
-fern = "0.5"
-chrono = "0.4"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-uuid = { version = "0.8", features = ["v4"] }
-bytes = "0.5"
-reqwest = { version = "0.10", features = ["json"] }
-lazy_static = "1.4.0"
-async-trait = "0.1"
+tantivy = "^0.13"
+tokio = { version = "0.2", features = ["full"] }
 url = "2.1"
-# tantivy = "0.13"
+uuid = { version = "0.8", features = ["v4"] }
+dashmap                = "^3"

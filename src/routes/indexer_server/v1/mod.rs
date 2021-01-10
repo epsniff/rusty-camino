@@ -6,8 +6,14 @@ mod index;
 
 pub fn router() -> Router<Body, crate::Error> {
     Router::builder()
+        // POST /api/v1/:indexname/_create
+        .post("/:indexname/_create", index::handlers::index_create)
+        // POST /api/v1/:indexname/_upsert
+        .post("/:indexname/_upsert", index::handlers::index_single)
         // POST /api/v1/:indexname/_batch
         .post("/:indexname/_batch", index::handlers::index_batch_load)
+        // POST /api/v1/:indexname/_search
+        .post("/:indexname/_search", index::handlers::index_search)
         // GET /api/v1/:indexname/_stats
         .get("/:indexname/_stats", index::handlers::index_stats)
         .build()
