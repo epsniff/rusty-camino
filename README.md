@@ -1,6 +1,6 @@
 # rusty-camino
 
-rusty-camino
+rusty-camino - Project to play with Rust based distrubted services. 
 
 ## Requirements
 
