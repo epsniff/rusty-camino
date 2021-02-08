@@ -11,6 +11,7 @@ pub mod constants;
 mod error;
 pub mod ext;
 pub mod http_client;
+pub mod info_retrieval;
 pub mod prelude;
 pub mod routes;
 pub mod startup;
@@ -18,6 +19,7 @@ pub mod startup;
 mod test_env;
 pub mod types;
 pub mod utils;
+
 
 pub type Result<T> = std::result::Result<T, Error>;
 
