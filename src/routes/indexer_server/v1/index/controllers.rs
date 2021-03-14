@@ -1,5 +1,6 @@
 use crate::http_client::client;
 use crate::prelude::*;
+use crate::info_retrieval;
 use hyper::header;
 use serde_json::Value;
 use std::{error::Error as StdError, fmt};
