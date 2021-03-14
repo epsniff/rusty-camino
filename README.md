@@ -1,6 +1,6 @@
 # rusty-camino
 
-rusty-camino - Project to play with Rust based distrubted services. 
+rusty-camino - Project to play with Rust based distributed services.  I'd like to say that someday I morph it into a project like Microsoft's Helios paper, but that just a goal to give me some focus at this point while I play with Rust.  Ref https://blog.acolyer.org/2020/10/26/helios-part-1/
 
 ## Requirements
 
