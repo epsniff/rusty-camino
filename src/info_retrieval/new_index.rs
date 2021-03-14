@@ -1,9 +1,8 @@
 #[macro_use]
-extern crate serde_json;
 
 use serde_json::{Map, Number, Value};
-
 use tantivy::schema::*;
+use crate::info_retrieval::types::SchemaField;
 
 pub struct IndexSchema {
     schema: serde_json::Map,
