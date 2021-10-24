@@ -1,6 +1,8 @@
 use std::clone::Clone;
 use std::fs;
 use std::sync::Arc;
+use std::error;
+use std::path::PathBuf;
 
 use dashmap::DashMap;
 use tantivy::directory::MmapDirectory;
@@ -24,23 +26,22 @@ pub struct IndexCanister {
 #[async_trait::async_trait]
 impl IndexServer for IndexCanister {
     fn raft_id(&self) -> u64 {
-        self.settings.experimental_features.id
+        self.settings.server_id
     }
 }
 
 impl IndexCanister {
     pub fn new(base_path: PathBuf, settings: CanisterSettings) -> Result<Self> {
         let local_idxs = DashMap::new();
-        let mut index_cat = IndexCatalog {
-            settings,
-            local_handles: local_idxs,
+        let mut index_can = IndexCanister {
+            settings: settings,
+            shards: local_idxs,
         };
-        index_cat.refresh_catalog()?;
 
-        Ok(index_cat)
+        Ok(index_can)
     }
 
-    pub fn add_new_shard(settings: IndexSettings) -> Result {
-
+    pub fn add_new_shard(settings: IndexSettings) -> Result<()> {
+        Ok(())
     }
 }

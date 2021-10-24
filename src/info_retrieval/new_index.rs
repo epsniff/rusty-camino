@@ -1,12 +1,13 @@
 #[macro_use]
 
-use serde_json::{Map, Number, Value};
-use tantivy::schema::*;
-use crate::info_retrieval::types::SchemaField;
+use std::path::PathBuf;
+use std::fs;
+use std::io;
 
-pub struct IndexSchema {
-    schema: serde_json::Map,
-}
+use tantivy::schema::*;
+use tantivy::Index;
+
+use crate::info_retrieval::types::SchemaField;
 
 fn add_field(schema_builder: &mut SchemaBuilder, schema_field: SchemaField) {
     /*
@@ -30,9 +31,9 @@ fn add_field(schema_builder: &mut SchemaBuilder, schema_field: SchemaField) {
             }
             let mut text_indexing_options = TextFieldIndexing::default();
             if indexed {
-                text_indexing_options.set_index_option(IndexRecordOption::Basic);
-                if schema_field.indexed_lang == "en" {
-                    text_indexing_options.set_tokenizer("en_stem");
+                text_indexing_options = text_indexing_options.set_index_option(IndexRecordOption::Basic);
+                if indexed_lang_stem == "en" { // TODO replace magic string
+                    text_indexing_options = text_indexing_options.set_tokenizer("en_stem");
                 }
                 // TODO throw an error if lang not supported.....
                 if indexed_tokenized {
@@ -48,7 +49,7 @@ fn add_field(schema_builder: &mut SchemaBuilder, schema_field: SchemaField) {
                 } else {
                     text_indexing_options = text_indexing_options.set_tokenizer("raw");
                 }
-                schema_builder.add_text_field(column_name, text_options);
+                schema_builder.add_text_field(column_name.as_str(), text_options);
             }
         }
         SchemaField::Keyword { column_name, stored } => {
@@ -57,13 +58,13 @@ fn add_field(schema_builder: &mut SchemaBuilder, schema_field: SchemaField) {
             let mut text_indexing_options = TextFieldIndexing::default().set_index_option(IndexRecordOption::Basic);
             text_indexing_options = text_indexing_options.set_tokenizer("raw");
             text_options = text_options.set_indexing_options(text_indexing_options);
-            schema_builder.add_text_field(schema_field.column_name, text_options);
+            schema_builder.add_text_field(column_name.as_str(), text_options);
         }
         SchemaField::UInt64 {
             column_name,
             stored,
             indexed,
-            doc_vals,
+            doc_values,
         } => {
             let mut int_options = IntOptions::default();
             if stored {
@@ -75,13 +76,13 @@ fn add_field(schema_builder: &mut SchemaBuilder, schema_field: SchemaField) {
             if doc_values {
                 int_options = int_options.set_fast(Cardinality::SingleValue);
             }
-            schema_builder.add_u64_field(column_name, int_options);
+            schema_builder.add_u64_field(column_name.as_str(), int_options);
         }
         SchemaField::Int64 {
             column_name,
             stored,
             indexed,
-            doc_vals,
+            doc_values,
         } => {
             let mut int_options = IntOptions::default();
             if stored {
@@ -93,13 +94,13 @@ fn add_field(schema_builder: &mut SchemaBuilder, schema_field: SchemaField) {
             if doc_values {
                 int_options = int_options.set_fast(Cardinality::SingleValue);
             }
-            schema_builder.add_i64_field(column_name, int_options);
+            schema_builder.add_i64_field(column_name.as_str(), int_options);
         }
         SchemaField::Float64 {
             column_name,
             stored,
             indexed,
-            doc_vals,
+            doc_values,
         } => {
             let mut int_options = IntOptions::default();
             if stored {
@@ -111,13 +112,13 @@ fn add_field(schema_builder: &mut SchemaBuilder, schema_field: SchemaField) {
             if doc_values {
                 int_options = int_options.set_fast(Cardinality::SingleValue);
             }
-            schema_builder.add_f64_field(column_name, int_options);
+            schema_builder.add_f64_field(column_name.as_str(), int_options);
         }
         SchemaField::Date {
             column_name,
             stored,
             indexed,
-            doc_vals,
+            doc_values,
         } => {
             let mut int_options = IntOptions::default();
             if stored {
@@ -129,13 +130,13 @@ fn add_field(schema_builder: &mut SchemaBuilder, schema_field: SchemaField) {
             if doc_values {
                 int_options = int_options.set_fast(Cardinality::SingleValue);
             }
-            schema_builder.add_date_field(column_name, int_options);
+            schema_builder.add_date_field(column_name.as_str(), int_options);
         }
         SchemaField::Facet { column_name } => {
-            schema_builder.add_facet_field(column_name);
+            schema_builder.add_facet_field(column_name.as_str());
         }
         SchemaField::Bytes { column_name } => {
-            schema_builder.add_bytes_field(column_name);
+            schema_builder.add_bytes_field(column_name.as_str());
         }
     }
 }
@@ -143,7 +144,7 @@ fn add_field(schema_builder: &mut SchemaBuilder, schema_field: SchemaField) {
 fn run_new(directory: PathBuf, schema_fields: Vec<SchemaField>) -> tantivy::Result<()> {
     let mut schema_builder = SchemaBuilder::default();
     for schema_field in schema_fields.iter() {
-        add_field(schema_builder, schema_field)
+        add_field(&mut schema_builder, *schema_field)
     }
     let schema = schema_builder.build();
 
@@ -158,11 +159,3 @@ fn run_new(directory: PathBuf, schema_fields: Vec<SchemaField>) -> tantivy::Resu
     Ok(())
 }
 
-// TEST
-/*
-    let exampleSchema = json!({
-        "key1": "value",
-        "key2": ["val", "val", "val"],
-        "key3": { "keyX": 12 }
-    });
-*/
