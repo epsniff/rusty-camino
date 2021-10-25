@@ -1,5 +1,5 @@
 
-mod index_canister;
-mod local_shard;
-mod new_index;
-mod types;
+pub mod index_canister;
+pub mod local_shard;
+pub mod new_index;
+pub mod types;
