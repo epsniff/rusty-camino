@@ -3,12 +3,9 @@ use std::hash::{Hash, Hasher};
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 
-use log::*;
-use tantivy::collector::{FacetCollector, MultiCollector, TopDocs};
-use tantivy::query::{AllQuery, QueryParser};
 use tantivy::schema::*;
 use tantivy::space_usage::SearcherSpaceUsage;
-use tantivy::{Document, Index, IndexReader, IndexWriter, ReloadPolicy, Term};
+use tantivy::{Document, Index, IndexReader, IndexWriter, ReloadPolicy};
 
 use crate::info_retrieval::types::*;
 use crate::Result;
@@ -70,11 +67,11 @@ impl IndexHandle for Shard {
         self.reader.searcher().space_usage()
     }
 
-    async fn search_index(&self, search: Query) -> Result<SearchResults> {
+    async fn search_index(&self, _: Query) -> Result<SearchResults> {
         return Ok(SearchResults{})
     }
 
-    async fn add_document(&self, doc: Document) -> Result<()> {
+    async fn add_document(&self, _: Document) -> Result<()> {
         return Ok(())
     }
 
@@ -221,6 +218,7 @@ impl Shard {
         })
     }
 
+    #[allow(dead_code)] // TODO turn off allow dead_code here after doc parsing is fulling implemented
     fn parse_doc(schema: &Schema, bytes: &str) -> Result<Document> {
         let d = schema.parse_document(bytes);
         // format!("Failed to parse document {:?}", e) 

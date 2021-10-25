@@ -17,7 +17,7 @@ use crate::Result;
 /// Defines the interface for obtaining a handle from a catalog to an index
 #[async_trait::async_trait]
 pub trait IndexServer {
-    // TODO fn find_shard(indexname str, shardid u64) -> Server
+    // TODO fn find_shard(index_name str, shard_id u64) -> Server
     /// The current catalog's raft_id
     fn raft_id(&self) -> u64;
 }
@@ -64,7 +64,7 @@ impl IndexSettings{
         match self.merge_policy.as_ref() {
             // TODO convert these to an ENUM and make them Serde types, like SchemaField
             "merge_log" => {
-                let mut mp = LogMergePolicy::default();
+                let mp = LogMergePolicy::default();
                 //mp.set_level_log_size(self.merge_policy.level_log_size);
                 //mp.set_min_layer_size(self.merge_policy.min_layer_size);
                 //mp.set_min_merge_size(self.merge_policy.min_merge_size);
@@ -72,7 +72,7 @@ impl IndexSettings{
             }
             "merge_no_merge" => Box::new(NoMergePolicy::default()),
             _ => {
-                let mut mp = LogMergePolicy::default();
+                let mp = LogMergePolicy::default();
                 Box::new(mp)
             }
         }
