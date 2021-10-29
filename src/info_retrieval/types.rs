@@ -50,7 +50,6 @@ pub struct Search {
 pub struct CanisterSettings {
     pub base_path: PathBuf,
     pub server_id: u64, 
-    pub index_settings: IndexSettings,
 }
 
 pub struct IndexSettings {

@@ -1,16 +1,19 @@
 use crate::http_client::client;
 use crate::prelude::*;
-use crate::info_retrieval;
+use crate::info_retrieval::canister;
+use crate::info_retrieval::types::IndexSettings;
 use hyper::header;
 use serde_json::Value;
 use std::{error::Error as StdError, fmt};
 use url::Url;
 
 pub async fn index_create(idx: &str) -> crate::Result<String> {
-    Ok(format!(
-        "index: {}, index_create",
-        idx,
-    ))
+    let can = canister();
+    can.add_index(IndexSettings{
+        index_name: String::from(idx),
+        writer_memory: 0,
+        merge_policy: String::from("merge_log"),
+     })
 }
 
 pub async fn index_single(idx: &str) -> crate::Result<String> {

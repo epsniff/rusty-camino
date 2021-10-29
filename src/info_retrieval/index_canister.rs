@@ -1,5 +1,4 @@
 
-use std::sync::Arc;
 use std::path::PathBuf;
 
 use dashmap::DashMap;
@@ -11,8 +10,6 @@ use crate::info_retrieval::types::IndexSettings;
 
 use crate::info_retrieval::local_shard::Shard;
 use crate::Result;
-
-pub type Canister = Arc<IndexCanister>;
 
 #[allow(dead_code)] // TODO turn off allow dead_code here after canister is fulling implemented
 pub struct IndexCanister {
@@ -40,7 +37,10 @@ impl IndexCanister {
         Ok(index_can)
     }
 
-    pub fn add_new_shard(_: IndexSettings) -> Result<()> {
-        Ok(())
+    pub fn add_index(&self, settings: IndexSettings) -> Result<String> {
+    Ok(format!(
+        "index: {}, index_create",
+        settings.index_name,
+    ))
     }
 }
