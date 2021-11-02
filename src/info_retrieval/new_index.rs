@@ -144,7 +144,7 @@ fn add_field(schema_builder: &mut SchemaBuilder, schema_field: &SchemaField) {
 }
 
 #[allow(dead_code)] // TODO turn off allow dead_code here after index creation is fulling implemented
-fn run_new(directory: PathBuf, schema_fields: Vec<SchemaField>) -> tantivy::Result<()> {
+pub fn run_new(directory: &PathBuf, schema_fields: Vec<SchemaField>) -> tantivy::Result<Index> {
     let mut schema_builder = SchemaBuilder::default();
     for schema_field in schema_fields.iter() {
         add_field(&mut schema_builder, schema_field)
@@ -152,13 +152,12 @@ fn run_new(directory: PathBuf, schema_fields: Vec<SchemaField>) -> tantivy::Resu
     let schema = schema_builder.build();
 
     // println!("\n{}\n", Style::new().fg(Green).paint(schema_json));
-    match fs::create_dir(&directory) {
+    match fs::create_dir(directory) {
         Ok(_) => (),
         // Proceed here; actual existence of index is checked in Index::create_in_dir
         Err(ref e) if e.kind() == io::ErrorKind::AlreadyExists => (),
         Err(e) => panic!("{:?}", e),
     };
-    Index::create_in_dir(&directory, schema)?;
-    Ok(()) 
+    Index::create_in_dir(&directory, schema)
 }
 
