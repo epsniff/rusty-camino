@@ -38,13 +38,20 @@ impl IndexCanister {
         Ok(index_can)
     }
 
+    pub fn get_shard(&self, index_name: &str) -> Result<Shard> {
+        let name = format!("{}-1", index_name);
+        self.shards.get(&name)
+        .map(|r| r.value().to_owned())
+        .ok_or_else(|| crate::Error::new(format!("get failed: {}", name)))
+    }
+
     pub fn add_index(&self, schema: &str, settings: IndexSettings) -> Result<String> {
         let schema_fields = serde_json::from_str(schema).expect("error deserializing schema");
         let index = run_new(&self.base_path, schema_fields).expect("error creating index");
         let name = format!("{}-1", settings.index_name);
         let response = format!("index: {}, index_create", settings.index_name);
         let shard = Shard::new(index, settings, &name[..])?;
-        self.shards.insert(name, shard).expect("error adding to map");
+        self.shards.insert(name, shard);
         Ok(response)
     }
 }

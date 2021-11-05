@@ -6,6 +6,7 @@ use hyper::header;
 use serde_json::Value;
 use std::{error::Error as StdError, fmt};
 use url::Url;
+use crate::info_retrieval::types::IndexHandle;
 
 static DEFAULT_SCHEMA: &str = r#"
 [
@@ -93,6 +94,9 @@ pub async fn index_batch_load(idx: &str) -> crate::Result<String> {
 }
 
 pub async fn index_stats(_idx: &str) -> crate::Result<String> {
+    let can = canister();
+    let ohyeah = can.get_shard(_idx).expect("oh fuck");
+    return Ok(ohyeah.get_name());
     // return Err(crate::Error::new(format!(
     //     "Not Implemented: index_stats, index: {} ",
     //     idx,
