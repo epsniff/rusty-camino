@@ -1,7 +1,7 @@
 
 
 use std::net::{IpAddr, SocketAddr};
-
+use std::path::PathBuf;
 use crate::{constants, routes, startup, utils, ResultExt};
 
 
@@ -19,6 +19,12 @@ pub fn server_bind_port() -> u16 {
     return bind_port
 }
 
+pub fn server_canister_path() -> PathBuf {
+    let path: PathBuf = utils::env(constants::env::CANISTER_PATH)
+            .and_then(|p| Some(PathBuf::from(p)))
+            .unwrap_or(PathBuf::from(constants::SERVER_DEFAULT_CANISTER_PATH));
+    return path
+}
 
 
 

@@ -9,9 +9,9 @@ use crate::constants;
 
 lazy_static! {
     static ref INDEX_CANISTER: index_canister::IndexCanister = index_canister::IndexCanister::new(
-        PathBuf::from(constants::env::CANISTER_PATH),
+        crate::config::server_canister_path(),
         types::CanisterSettings{
-            base_path: PathBuf::from(constants::env::CANISTER_PATH),
+            base_path: crate::config::server_canister_path(),
             server_id: 1,
         })
         .expect("Failed to create the global HTTP client instance");

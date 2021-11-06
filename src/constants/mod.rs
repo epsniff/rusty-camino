@@ -5,6 +5,7 @@ pub mod env;
 
 pub const SERVER_DEFAULT_IP: IpAddr = IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0));
 pub const SERVER_DEFAULT_PORT: u16 = 3001;
+pub const SERVER_DEFAULT_CANISTER_PATH: &'static str = r"/tmp/rusty-can";
 
 pub const APP_NAME: &'static str = env!("CARGO_PKG_NAME");
 pub const APP_VERSION: &'static str = env!("CARGO_PKG_VERSION");
