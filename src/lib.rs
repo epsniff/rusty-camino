@@ -6,8 +6,8 @@ pub use self::test_env::setup_test_environment;
 pub mod logger;
 #[macro_use]
 pub mod macros;
-
 pub mod constants;
+pub mod config;
 mod error;
 pub mod ext;
 pub mod http_client;

@@ -1,20 +1,16 @@
 extern crate rusty_camino;
 use hyper::Server;
-use rusty_camino::{constants, routes, startup, utils, ResultExt};
+use rusty_camino::{routes, startup, ResultExt};
 use routerify::RouterService;
-use std::net::{IpAddr, SocketAddr};
+use std::net::SocketAddr;
 
 #[tokio::main]
 async fn main() {
     startup::up().await.context("Failed to startup the server").unwrap();
 
     let addr = SocketAddr::new( 
-        utils::env(constants::env::HOST)
-            .and_then(|host| host.parse::<IpAddr>().ok())
-            .unwrap_or(constants::SERVER_DEFAULT_IP),
-        utils::env(constants::env::PORT)
-            .and_then(|port| port.parse::<u16>().ok())
-            .unwrap_or(constants::SERVER_DEFAULT_PORT),
+        rusty_camino::config::server_bind_ip(),
+        rusty_camino::config::server_bind_port(),
     );
 
     let server = Server::bind(&addr)
