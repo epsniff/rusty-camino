@@ -46,11 +46,18 @@ impl IndexCanister {
     }
 
     pub fn add_index(&self, schema: &str, settings: IndexSettings) -> Result<String> {
-        let schema_fields = serde_json::from_str(schema).expect("error deserializing schema");
-        let index = run_new(&self.base_path, schema_fields).expect("error creating index");
         let name = format!("{}-1", settings.index_name);
-        let response = format!("index: {}, index_create", settings.index_name);
+        match self.get_shard(&settings.index_name){
+            Ok(_) => return Ok(format!("index: {}, already exists", name)),
+            Err(_) => (),
+        };
+        let schema_fields = serde_json::from_str(schema).expect("error deserializing schema");
+        let mut shard_path: PathBuf = self.base_path.clone();
+        shard_path.push(&settings.index_name);
+        //shard_path.push("1");
+        let index = run_new(&shard_path, schema_fields).expect("error creating index");
         let shard = Shard::new(index, settings, &name[..])?;
+        let response = format!("index: {}, index_create", name);
         self.shards.insert(name, shard);
         Ok(response)
     }

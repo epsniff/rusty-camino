@@ -158,6 +158,7 @@ pub fn run_new(directory: &PathBuf, schema_fields: Vec<SchemaField>) -> tantivy:
         Err(ref e) if e.kind() == io::ErrorKind::AlreadyExists => (),
         Err(e) => panic!("{:?}", e),
     };
-    Index::create_in_dir(&directory, schema)
+    let dir = tantivy::directory::MmapDirectory::open(directory)?;
+    Index::open_or_create(dir, schema)
 }
 
