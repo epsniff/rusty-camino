@@ -44,6 +44,16 @@ impl IndexCanister {
         .map(|r| r.value().to_owned())
         .ok_or_else(|| crate::Error::new(format!("get failed: {}", name)))
     }
+    pub fn open_index(&self, settings: IndexSettings) -> Result<String> {
+        let name = format!("{}-1", settings.index_name);
+        let mut shard_path: PathBuf = self.base_path.clone();
+        shard_path.push(&settings.index_name);
+        let dir = tantivy::directory::MmapDirectory::open(shard_path).unwrap();
+        let index = tantivy::Index::open(dir).unwrap();
+        let shard = Shard::new(index, settings, &name[..])?;
+        self.shards.insert(name, shard);
+        Ok("yay".to_owned())
+    }
 
     pub fn add_index(&self, schema: &str, settings: IndexSettings) -> Result<String> {
         let name = format!("{}-1", settings.index_name);

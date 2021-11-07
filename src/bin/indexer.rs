@@ -3,26 +3,26 @@ use hyper::Server;
 use rusty_camino::{routes, startup, ResultExt};
 use routerify::RouterService;
 use std::net::SocketAddr;
+use rusty_camino::info_retrieval::canister;
+use std::fs;
+use rusty_camino::info_retrieval::types::IndexSettings;
 
 #[tokio::main]
 async fn main() {
     startup::up().await.context("Failed to startup the server").unwrap();
-let mut fuckme = rusty_camino::config::server_canister_path();
-//    fuckme.push_str("/");
-//    let mut prefix_path = std::path::PathBuf::new();
-//    prefix_path.push(fuckme);
-//    let paths = fs::read_dir(rusty_camino::config::server_canister_path()).unwrap();
-//    let can = canister();
-//    for path in paths {
-//        let pb = path.unwrap().path();
-//        let name =pb.strip_prefix(&prefix_path).expect(&format!("{}", prefix_path.to_str().unwrap()));
-//        println!("{:?}", name.to_str());
-//    //can.add_index("", IndexSettings{
-//        //index_name: String::from(name.to_str().unwrap()),
-//        //writer_memory: 3000000,
-//        //merge_policy: String::from("merge_log"),
-//     //}).unwrap();
-//    }
+
+    let prefix_path = rusty_camino::config::server_canister_path();
+    let paths = fs::read_dir(rusty_camino::config::server_canister_path()).unwrap();
+    let can = canister();
+    for path in paths {
+        let pb = path.unwrap().path();
+        let name =pb.strip_prefix(&prefix_path).unwrap();
+        can.open_index(IndexSettings{
+            index_name: String::from(name.to_str().unwrap()),
+            writer_memory: 3000000,
+            merge_policy: String::from("merge_log"),
+         }).unwrap();
+    }
 
 
     let addr = SocketAddr::new( 
