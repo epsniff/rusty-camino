@@ -30,6 +30,7 @@ fn init_fern_logger() {
                 message
             ))
         })
+        .level(log::LevelFilter::Debug)
         .apply()
         .unwrap();
 }
