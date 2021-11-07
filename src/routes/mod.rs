@@ -31,7 +31,7 @@ pub fn indexer_router() -> Router<Body, crate::Error> {
 }
 
 async fn logger_middleware(req: Request<Body>) -> crate::Result<Request<Body>> {
-    info!(
+    log::info!(
         "{} {} {}",
         utils::extract_client_ip_from_req(&req),
         req.method(),
@@ -49,6 +49,6 @@ async fn home_get(_: Request<Body>) -> crate::Result<Response<Body>> {
 }
 
 async fn error_handler(err: routerify::Error) -> Response<Body> {
-    error!("{}", err);
+    log::error!("{}", err);
     resp_500!("{}", err).expect("Couldn't create a response while handling the server error")
 }

@@ -7,13 +7,26 @@ use rusty_camino::info_retrieval::canister;
 use std::fs;
 use rusty_camino::info_retrieval::types::IndexSettings;
 
+
+
 #[tokio::main]
 async fn main() {
+
     startup::up().await.context("Failed to startup the server").unwrap();
 
+    log::info!("starting index server");
+
     let prefix_path = rusty_camino::config::server_canister_path();
-    let paths = fs::read_dir(rusty_camino::config::server_canister_path()).unwrap();
+    log::info!("Loading existing indexes from canister path {}", prefix_path.clone().to_str().unwrap());
+
+    if !prefix_path.as_path().exists() {
+        log::warn!("the canister path doesn't exist, creating it at {}", prefix_path.clone().to_str().unwrap());
+        fs::create_dir(prefix_path.as_path());
+    }
+
+    let paths = fs::read_dir(prefix_path.clone()).unwrap();
     let can = canister();
+
     for path in paths {
         let pb = path.unwrap().path();
         let name =pb.strip_prefix(&prefix_path).unwrap();
@@ -39,8 +52,8 @@ async fn main() {
         .tcp_sleep_on_accept_errors(true)
         .serve(RouterService::new(routes::indexer_router()).unwrap());
 
-    rusty_camino::info!("Indexer is serving on: {}", server.local_addr());
+    log::info!("Indexer is serving on: {}", server.local_addr());
     if let Err(e) = server.await {
-        rusty_camino::error!("Server Error: {}", e);
+        log::error!("Server Error: {}", e);
     }
 }
