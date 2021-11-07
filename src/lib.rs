@@ -3,7 +3,6 @@ pub use self::error::{Error, ErrorExt, ResultExt};
 pub use self::test_env::setup_test_environment;
 
 #[macro_use]
-#[macro_use]
 pub mod macros;
 pub mod constants;
 pub mod config;

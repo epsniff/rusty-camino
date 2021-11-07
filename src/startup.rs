@@ -1,28 +1,44 @@
 use crate::utils;
 use colored::*;
 
-use log::{error, info, warn, LevelFilter};
+use fern::colors::{Color, ColoredLevelConfig};
+use log::LevelFilter;
 use log4rs::{
     append::console::ConsoleAppender,
     config::{Appender, Root},
     encode::json::JsonEncoder,
 };
-use env_logger::Env;
-
 
 pub async fn up() -> crate::Result<()> {
-    init_json_logger();
+    init_fern_logger();
+    // init_json_logger();
     dotenv::dotenv().ok();
     log_app_env();
     Ok(())
 }
 
+fn init_fern_logger() {
+    let colors = ColoredLevelConfig::new();
+    fern::Dispatch::new()
+        .chain(std::io::stdout())
+        .format(move |out, message, record| {
+            out.finish(format_args!(
+                "[{}]{} {}",
+                // This will color the log level only, not the whole line. Just a touch.
+                colors.color(record.level()),
+                chrono::Utc::now().format("[%Y-%m-%d %H:%M:%S]"),
+                message
+            ))
+        })
+        .apply()
+        .unwrap();
+}
+
+#[allow(dead_code)] // in the future we can turn on json logging via config
 fn init_json_logger() {
     let encoder = JsonEncoder::new();
 
-    let stdout: ConsoleAppender = ConsoleAppender::builder()
-        .encoder(Box::new(encoder))
-        .build();
+    let stdout: ConsoleAppender = ConsoleAppender::builder().encoder(Box::new(encoder)).build();
     let log_config = log4rs::config::Config::builder()
         .appender(Appender::builder().build("stdout", Box::new(stdout)))
         .build(Root::builder().appender("stdout").build(LevelFilter::Info))

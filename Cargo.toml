@@ -18,7 +18,7 @@ bytes       = "0.5"
 chrono = "0.4"
 colored = "1.9"
 dotenv = "0.15.0"
-fern = "0.5"
+fern = { version = "0.5", features = ["colored"] }
 hyper = "0.13"
 lazy_static = "1.4.0"
 reqwest = { version = "0.10", features = ["json"] }

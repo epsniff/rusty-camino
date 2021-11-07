@@ -4,8 +4,6 @@ pub mod new_index;
 pub mod types;
 
 use lazy_static::lazy_static;
-use std::path::PathBuf;
-use crate::constants;
 
 lazy_static! {
     static ref INDEX_CANISTER: index_canister::IndexCanister = index_canister::IndexCanister::new(

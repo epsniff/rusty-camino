@@ -101,7 +101,7 @@ pub async fn index_stats(_idx: &str) -> crate::Result<String> {
     //     "Not Implemented: index_stats, index: {} ",
     //     idx,
     // )));
-    return Err(crate::ErrorExt::wrap(NotImplementedError));
+    // return Err(crate::ErrorExt::wrap(NotImplementedError));
     // Ok(format!(
     //     "index: {}, index_stats",
     //     idx

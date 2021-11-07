@@ -21,7 +21,7 @@ async fn main() {
 
     if !prefix_path.as_path().exists() {
         log::warn!("the canister path doesn't exist, creating it at {}", prefix_path.clone().to_str().unwrap());
-        fs::create_dir(prefix_path.as_path());
+        fs::create_dir_all(prefix_path.as_path()).expect("failed to create canister path");
     }
 
     let paths = fs::read_dir(prefix_path.clone()).unwrap();
@@ -30,6 +30,13 @@ async fn main() {
     for path in paths {
         let pb = path.unwrap().path();
         let name =pb.strip_prefix(&prefix_path).unwrap();
+        let mut meta_path = pb.to_path_buf();
+        meta_path.push("meta.json");
+        if !meta_path.as_path().exists()  {
+            log::warn!("found a directory in the canister which isn't an index, failed to find a tantivy meta file at: '{}'", meta_path.to_str().unwrap());
+            continue;
+        }
+        log::info!("loading index at '{}'", pb.clone().to_str().unwrap());
         can.open_index(IndexSettings{
             index_name: String::from(name.to_str().unwrap()),
             writer_memory: 3000000,
