@@ -72,8 +72,29 @@ impl IndexHandle for Shard {
     }
 
     async fn add_document(&self, _: Document) -> Result<()> {
-        return Ok(())
+        Ok(())
+    //     let index_schema = self.index.schema();
+    //     let writer_lock = self.get_writer();
+    //     {
+    //         let index_writer = writer_lock.lock().await;
+    //         let doc: Document = Shard::parse_doc(&index_schema, &add_doc.document.to_string())?;
+    //         index_writer.add_document(doc);
+    //     }
+    //     if let Some(opts) = add_doc.options {
+    //         if opts.commit {
+    //             let mut commit_writer = writer_lock.lock().await;
+    //             commit_writer.commit()?;
+    //             self.set_opstamp(0);
+    //         } else {
+    //             self.set_opstamp(self.get_opstamp() + 1);
+    //         }
+    //     } else {
+    //         self.set_opstamp(self.get_opstamp() + 1);
+    //     }
+    //     Ok(())
+    // }
     }
+
 
     // async fn search_index(&self, search: Search) -> Result<SearchResults> {
     //     let searcher = self.reader.searcher();
@@ -160,27 +181,6 @@ impl IndexHandle for Shard {
     //    }
     //}
     //
-    //async fn add_document(&self, add_doc: AddDocument) -> Result<()> {
-    //    let index_schema = self.index.schema();
-    //    let writer_lock = self.get_writer();
-    //    {
-    //        let index_writer = writer_lock.lock().await;
-    //        let doc: Document = Shard::parse_doc(&index_schema, &add_doc.document.to_string())?;
-    //        index_writer.add_document(doc);
-    //    }
-    //    if let Some(opts) = add_doc.options {
-    //        if opts.commit {
-    //            let mut commit_writer = writer_lock.lock().await;
-    //            commit_writer.commit()?;
-    //            self.set_opstamp(0);
-    //        } else {
-    //            self.set_opstamp(self.get_opstamp() + 1);
-    //        }
-    //    } else {
-    //        self.set_opstamp(self.get_opstamp() + 1);
-    //    }
-    //    Ok(())
-    //}
 }
 
 impl Shard {
@@ -219,8 +219,8 @@ impl Shard {
     }
 
     #[allow(dead_code)] // TODO turn off allow dead_code here after doc parsing is fulling implemented
-    fn parse_doc(schema: &Schema, bytes: &str) -> Result<Document> {
-        let d = schema.parse_document(bytes);
+    fn parse_doc(schema: &Schema, data: &str) -> Result<Document> {
+        let d = schema.parse_document(data);
         // format!("Failed to parse document {:?}", e) 
         match d {
             Ok(doc) => Ok(doc),
