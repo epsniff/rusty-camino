@@ -7,6 +7,9 @@ use tantivy::schema::*;
 use tantivy::space_usage::SearcherSpaceUsage;
 use tantivy::{Document, Index, IndexReader, IndexWriter, ReloadPolicy};
 
+use tantivy::query::QueryParser;
+use tantivy::collector::TopDocs;
+
 use crate::info_retrieval::types::*;
 use crate::Result;
 
@@ -67,8 +70,27 @@ impl IndexHandle for Shard {
         self.reader.searcher().space_usage()
     }
 
-    async fn search_index(&self, _: Query) -> Result<SearchResults> {
-        return Ok(SearchResults{})
+    // TODO(aj) Does this function really need to be async?
+    async fn search_index(&self, query: &str) -> Result<SearchResults> {
+        let searcher = self.reader.searcher();
+
+        // ### Query
+    
+        // The query parser can interpret human queries.
+        // Here, if the user does not specify which
+        // field they want to search, tantivy will search
+        // in both title and body.
+        let query_parser = QueryParser::for_index(&self.index, vec![]);
+        let q = query_parser.parse_query(query)?;
+        let top_docs = searcher.search(&q, &TopDocs::with_limit(5).and_offset(0))?;
+        let mut places = vec![];
+        for (_score, doc_address) in top_docs {
+            let retrieved_doc = searcher.doc(doc_address)?;
+            places.push(self.index.schema().to_json(&retrieved_doc));
+        }
+        return Ok(SearchResults{
+           docs: places, 
+        })
     }
 
     async fn add_document(&self, _: Document) -> Result<()> {
