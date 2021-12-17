@@ -28,8 +28,8 @@ pub trait IndexHandle {
     fn get_index(&self) -> Index ;
     fn get_writer(&self) -> Arc<Mutex<IndexWriter>>;
     fn get_space(&self) -> SearcherSpaceUsage;
+    async fn add_document(&self, data: &str) -> Result<()> ;
     async fn search_index(&self, search: &str) -> Result<SearchResults> ;
-    async fn add_document(&self, doc: Document) -> Result<()> ;
 }
 
 /// The request body of a search POST

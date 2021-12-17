@@ -69,8 +69,7 @@ impl IndexHandle for Shard {
     fn get_space(&self) -> SearcherSpaceUsage {
         self.reader.searcher().space_usage()
     }
-
-    // TODO(aj) Does this function really need to be async?
+  
     async fn search_index(&self, query: &str) -> Result<SearchResults> {
         let searcher = self.reader.searcher();
 
@@ -93,8 +92,34 @@ impl IndexHandle for Shard {
         })
     }
 
-    async fn add_document(&self, _: Document) -> Result<()> {
-        return Ok(())
+    async fn add_document(&self, data: &str) -> Result<()> {
+        
+        let index_schema = self.index.schema();
+        let w_mutext = self.get_writer();
+
+        let d = index_schema.parse_document(data);
+        // format!("Failed to parse document {:?}", e)
+        match d {
+            Ok(doc) => {
+                let mut writer = w_mutext.lock().unwrap();
+                writer.add_document(doc);
+                // ### Committing
+                //
+                // At this point our documents are not searchable.
+                //
+                //
+                // We need to call `.commit()` explicitly to force the
+                // `index_writer` to finish processing the documents in the queue,
+                // flush the current index to the disk, and advertise
+                // the existence of new documents.
+                //
+                // This call is blocking.
+                let a = writer.commit();
+                log::debug!("indexed doc committed: checkpoint:{}", a.unwrap());
+            }
+            Err(e) => return Err(crate::Error::new(format!("Failed to parse document {:?}", e))),
+        }
+        return Ok(());
     }
 
     // async fn search_index(&self, search: Search) -> Result<SearchResults> {
@@ -182,27 +207,6 @@ impl IndexHandle for Shard {
     //    }
     //}
     //
-    //async fn add_document(&self, add_doc: AddDocument) -> Result<()> {
-    //    let index_schema = self.index.schema();
-    //    let writer_lock = self.get_writer();
-    //    {
-    //        let index_writer = writer_lock.lock().await;
-    //        let doc: Document = Shard::parse_doc(&index_schema, &add_doc.document.to_string())?;
-    //        index_writer.add_document(doc);
-    //    }
-    //    if let Some(opts) = add_doc.options {
-    //        if opts.commit {
-    //            let mut commit_writer = writer_lock.lock().await;
-    //            commit_writer.commit()?;
-    //            self.set_opstamp(0);
-    //        } else {
-    //            self.set_opstamp(self.get_opstamp() + 1);
-    //        }
-    //    } else {
-    //        self.set_opstamp(self.get_opstamp() + 1);
-    //    }
-    //    Ok(())
-    //}
 }
 
 impl Shard {
@@ -210,24 +214,17 @@ impl Shard {
         // let i = index.writer(settings.writer_memory)?;
 
         let i = match index.writer(settings.writer_memory) {
-            Ok(i)  => i,
-            Err(e) => return Err(crate::Error::new(format!(
-                "Failed to index write {:?}", e
-            ))),
+            Ok(i) => i,
+            Err(e) => return Err(crate::Error::new(format!("Failed to index write {:?}", e))),
         };
 
         i.set_merge_policy(settings.get_merge_policy());
         let current_opstamp = Arc::new(AtomicUsize::new(0));
         let writer = Arc::new(Mutex::new(i));
 
-        let reader = match index
-            .reader_builder()
-            .reload_policy(ReloadPolicy::OnCommit)
-            .try_into() {
-                Ok(reader)  => reader,
-                Err(e) => return Err(crate::Error::new(format!(
-                    "Failed to create index reader {:?}", e
-                ))),
+        let reader = match index.reader_builder().reload_policy(ReloadPolicy::OnCommit).try_into() {
+            Ok(reader) => reader,
+            Err(e) => return Err(crate::Error::new(format!("Failed to create index reader {:?}", e))),
         };
         Ok(Self {
             index,
@@ -238,18 +235,6 @@ impl Shard {
             settings,
             name: name.into(),
         })
-    }
-
-    #[allow(dead_code)] // TODO turn off allow dead_code here after doc parsing is fulling implemented
-    fn parse_doc(schema: &Schema, bytes: &str) -> Result<Document> {
-        let d = schema.parse_document(bytes);
-        // format!("Failed to parse document {:?}", e) 
-        match d {
-            Ok(doc) => Ok(doc),
-            Err(e) => return Err(crate::Error::new(format!(
-                "Failed to parse document {:?}", e
-            ))),
-        }
     }
 
     pub fn recreate_writer(self) -> Result<Self> {
