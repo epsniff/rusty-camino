@@ -28,7 +28,7 @@ pub trait IndexHandle {
     fn get_index(&self) -> Index ;
     fn get_writer(&self) -> Arc<Mutex<IndexWriter>>;
     fn get_space(&self) -> SearcherSpaceUsage;
-    async fn search_index(&self, search: Query) -> Result<SearchResults> ;
+    async fn search_index(&self, search: &str) -> Result<SearchResults> ;
     async fn add_document(&self, doc: Document) -> Result<()> ;
 }
 
@@ -89,7 +89,9 @@ impl Clone for IndexSettings {
 }
 
 pub struct Query {}
-pub struct SearchResults {}
+pub struct SearchResults {
+    pub docs: Vec<String>,
+}
 
 /*
 /// Documents are really just a list of couple `(field, value)`.
