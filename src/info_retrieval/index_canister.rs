@@ -7,10 +7,12 @@ use dashmap::DashMap;
 use crate::info_retrieval::types::IndexServer;
 use crate::info_retrieval::types::CanisterSettings;
 use crate::info_retrieval::types::IndexSettings;
+use crate::info_retrieval::types::IndexHandle;
 
 use crate::info_retrieval::local_shard::Shard;
 use crate::info_retrieval::new_index::run_new;
 use crate::Result;
+use crate::info_retrieval::types::*;
 
 #[allow(dead_code)] // TODO turn off allow dead_code here after canister is fulling implemented
 pub struct IndexCanister {
@@ -70,5 +72,13 @@ impl IndexCanister {
         let response = format!("index: {}, index_create", name);
         self.shards.insert(name, shard);
         Ok(response)
+    }
+
+    pub async fn search_index(&self, index_name: &str, query: &str) -> Result<SearchResults> {
+        let name = format!("{}-1", index_name);
+        match self.get_shard(index_name){
+            Ok(shard) => return shard.search_index(query).await,
+            Err(_) => return Err(crate::Error::new(format!("index: {}, does not exist", name))),
+        };
     }
 }
