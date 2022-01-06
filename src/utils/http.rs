@@ -1,6 +1,12 @@
-use http::{Response, StatusCode};
+use hyper::{Response, StatusCode};
 use hyper::Body;
 use serde::Serialize;
+
+
+pub fn error_with_code(code: StatusCode, err: crate::Error) -> Response<Body>
+{
+    body_with_code(code, err)
+}
 
 pub fn body_with_code<T>(code: StatusCode, body: T) -> Response<Body>
 where

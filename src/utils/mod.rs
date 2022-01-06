@@ -4,7 +4,7 @@ use std::env;
 use std::net::IpAddr;
 use uuid::Uuid;
 
-
+pub mod http;
 
 pub fn env(name: &str) -> Option<String> {
     env::var(name).ok()
