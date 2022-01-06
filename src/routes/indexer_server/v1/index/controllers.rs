@@ -95,11 +95,10 @@ pub async fn index_single(idx: &str, doc: &str) -> crate::Result<String> {
     }
 }
 
-pub async fn index_search(idx: &str) -> crate::Result<String> {
-    Ok(format!(
-        "index: {}, index_search",
-        idx,
-    ))
+pub async fn index_search(idx: &str, query: &str) -> crate::Result<String> {
+    let can = canister();
+    let search_results = can.search_index(idx, query).await?;
+    Ok(search_results.docs.join("\n"))
 }
 
 pub async fn index_batch_load(idx: &str) -> crate::Result<String> {

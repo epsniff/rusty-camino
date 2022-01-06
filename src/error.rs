@@ -13,6 +13,17 @@ impl Error {
     }
 }
 
+impl From<tantivy::query::QueryParserError> for Error {
+    fn from(err: tantivy::query::QueryParserError) -> Error {
+        Error::new(format!("Error: {}", err))
+    }
+}
+impl From<tantivy::TantivyError> for Error {
+    fn from(err: tantivy::TantivyError) -> Error {
+        Error::new(format!("Error: {}", err))
+    }
+}
+
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "rusty_camino::Error: {}", self.msg)
