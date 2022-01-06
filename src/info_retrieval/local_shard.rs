@@ -3,9 +3,8 @@ use std::hash::{Hash, Hasher};
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 
-use tantivy::schema::*;
 use tantivy::space_usage::SearcherSpaceUsage;
-use tantivy::{Document, Index, IndexReader, IndexWriter, ReloadPolicy};
+use tantivy::{Index, IndexReader, IndexWriter, ReloadPolicy};
 
 use tantivy::query::QueryParser;
 use tantivy::collector::TopDocs;

@@ -1,7 +1,7 @@
 use crate::constants;
 use crate::types::AppInfo;
 use crate::utils;
-use hyper::{Body, Request, Response};
+use hyper::{Body, Request, Response, StatusCode};
 use routerify::{Middleware, Router};
 use routerify_cors::enable_cors_all;
 
@@ -12,7 +12,7 @@ pub fn api_router() -> Router<Body, crate::Error> {
     Router::builder()
         .middleware(Middleware::pre(logger_middleware))
         .middleware(enable_cors_all())
-        .get("/", home_get) 
+        .get("/", home_get)
         .scope("/", api_server::router())
         .err_handler(error_handler)
         .build()
@@ -41,14 +41,19 @@ async fn logger_middleware(req: Request<Body>) -> crate::Result<Request<Body>> {
 }
 
 async fn home_get(_: Request<Body>) -> crate::Result<Response<Body>> {
-    resp_200!(AppInfo {
-        name: constants::APP_NAME,
-        version: constants::APP_VERSION,
-        description: constants::APP_DESCRIPTION,
-    })
+    let res = utils::http::body_with_code(
+        StatusCode::OK,
+        AppInfo {
+            name: constants::APP_NAME,
+            version: constants::APP_VERSION,
+            description: constants::APP_DESCRIPTION,
+        },
+    );
+    return Ok(res);
 }
 
 async fn error_handler(err: routerify::Error) -> Response<Body> {
     log::error!("{}", err);
-    resp_500!("{}", err).expect("Couldn't create a response while handling the server error")
+    let cerr = crate::Error::new(format!("Error: {}", err));
+    utils::http::error_with_code(StatusCode::BAD_REQUEST, cerr)
 }

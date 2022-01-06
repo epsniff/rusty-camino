@@ -1718,6 +1718,7 @@ dependencies = [
  "routerify-json-response",
  "serde",
  "serde_json",
+ "sqlparser",
  "tantivy",
  "tokio",
  "url",
@@ -1886,6 +1887,15 @@ dependencies = [
  "libc",
  "redox_syscall 0.1.57",
  "winapi 0.3.9",
+]
+
+[[package]]
+name = "sqlparser"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b9907f54bd0f7b6ce72c2be1e570a614819ee08e3deb66d90480df341d8a12a8"
+dependencies = [
+ "log",
 ]
 
 [[package]]

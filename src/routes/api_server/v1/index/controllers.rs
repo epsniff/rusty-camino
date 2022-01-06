@@ -4,6 +4,7 @@ use hyper::header;
 use serde_json::Value;
 use url::Url;
 
+#[allow(dead_code)]
 pub async fn index_batch_load(idx: &str) -> crate::Result<String> {
     Ok(format!(
         "index: {}, index_batch_load",
@@ -11,6 +12,7 @@ pub async fn index_batch_load(idx: &str) -> crate::Result<String> {
     ))
 }
 
+#[allow(dead_code)]
 pub async fn index_stats(idx: &str) -> crate::Result<String> {
     Ok(format!(
         "index: {}, index_stats",

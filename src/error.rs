@@ -1,6 +1,9 @@
 use std::fmt::{self, Debug, Display, Formatter};
+use serde::Serialize;
 
+#[derive(Serialize)]
 pub struct Error {
+    #[serde(rename(serialize = "error_message"))]
     msg: String,
 }
 
@@ -69,3 +72,5 @@ impl<T, E: std::error::Error + Send + Sync + 'static> ResultExt<T> for Result<T,
         self.map_err(|e| e.context(ctx))
     }
 }
+
+
