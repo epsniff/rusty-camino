@@ -1,17 +1,17 @@
-use crate::routes::api_server::v1::index::controllers;
-use hyper::{Body, Request, Response};
+use crate::utils;
+use hyper::{Body, Request, Response, StatusCode};
 use routerify::prelude::*;
 
 // POST /api/v1/:indexname/_batch
 pub async fn index_batch_load(req: Request<Body>) -> crate::Result<Response<Body>> {
-    let index_name = req.param("indexname").unwrap();
-
-    resp_200!(controllers::index_batch_load(index_name).await?)
+    let _index_name = req.param("indexname").unwrap();
+    let res = utils::http::body_with_code(StatusCode::OK, {});
+    Ok(res)
 }
 
 // GET /api/v1/:indexname/_stats
 pub async fn index_stats(req: Request<Body>) -> crate::Result<Response<Body>> {
-    let index_name = req.param("indexname").unwrap();
-
-    resp_200!(controllers::index_stats(index_name).await?)
+    let _index_name = req.param("indexname").unwrap();
+    let res = utils::http::body_with_code(StatusCode::OK, {});
+    Ok(res)
 }

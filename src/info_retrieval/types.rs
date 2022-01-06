@@ -8,7 +8,6 @@ use tantivy::Index;
 use tantivy::space_usage::SearcherSpaceUsage;
 use tantivy::IndexWriter;
 use tantivy::merge_policy::*;
-use tantivy::{Document};
 
 use serde::{Deserialize, Serialize};
 use crate::Result;

@@ -29,12 +29,15 @@ pub async fn index_single(req: Request<Body>) -> crate::Result<Response<Body>> {
     let path = parse_path(parts.uri.path());
     let index_name = match &path[..] {
         [index_name, ..] => index_name,
-        [] => return resp_400!("Failed to parse index name"),
+        [] => {
+            let cerr = crate::Error::new(format!("Failed to parse index name"));
+            let res = utils::http::error_with_code(StatusCode::NOT_ACCEPTABLE, cerr);
+            return Ok(res);
+        }, 
     };
 
-
     // let index_name = req.clone().param("indexname").unwrap();
-    let res = body::to_bytes(req.into_body()).await;
+    let res = body::to_bytes(body).await;
     let bytes;
     match res {
         Ok(_bytes) => bytes = _bytes,
@@ -42,7 +45,7 @@ pub async fn index_single(req: Request<Body>) -> crate::Result<Response<Body>> {
             let cerr = crate::Error::new(format!("Invalid body: error:{}", e));
             let res = utils::http::error_with_code(StatusCode::NOT_ACCEPTABLE, cerr);
             return Ok(res);
-        }
+        },
     }
     let doc = match str::from_utf8(&bytes) {
         Ok(doc) => doc,
@@ -50,7 +53,7 @@ pub async fn index_single(req: Request<Body>) -> crate::Result<Response<Body>> {
             let cerr = crate::Error::new(format!("Invalid UTF-8 sequence: error:{}", e));
             let res = utils::http::error_with_code(StatusCode::NOT_ACCEPTABLE, cerr);
             return Ok(res);
-        }
+        },
     };
 
     let res = controllers::index_single(index_name, doc).await;
@@ -58,19 +61,30 @@ pub async fn index_single(req: Request<Body>) -> crate::Result<Response<Body>> {
         Ok(result) => {
             let res = utils::http::body_with_code(StatusCode::OK, result);
             return Ok(res);
-        }
+        },
         Err(e) => {
             let cerr = crate::Error::new(format!("Invalid index request: error:{}", e));
             let res = utils::http::error_with_code(StatusCode::NOT_ACCEPTABLE, cerr);
             return Ok(res);
-        }
+        },
     }
 }
 
 // POST /api/v1/:indexname/_batch
 pub async fn index_batch_load(req: Request<Body>) -> crate::Result<Response<Body>> {
     let index_name = req.param("indexname").unwrap();
-    resp_200!(controllers::index_batch_load(index_name).await?)
+    let res = controllers::index_batch_load(index_name).await;
+    match res {
+        Ok(result) => {
+            let res = utils::http::body_with_code(StatusCode::OK, result);
+            return Ok(res);
+        },
+        Err(e) => {
+            let cerr = crate::Error::new(format!("Invalid batch request: error:{}", e));
+            let res = utils::http::error_with_code(StatusCode::NOT_ACCEPTABLE, cerr);
+            return Ok(res);
+        },
+    }
 }
 
 fn parse_path(path: &str) -> Vec<&str> {
@@ -82,23 +96,49 @@ pub async fn index_search(req: Request<Body>) -> crate::Result<Response<Body>> {
     let path = parse_path(parts.uri.path());
     let index_name = match &path[..] {
         [index_name, ..] => index_name,
-        [] => return resp_400!("Failed to parse index name"),
+        [] => {
+            let cerr = crate::Error::new(format!("Failed to parse index name"));
+            let res = utils::http::error_with_code(StatusCode::NOT_ACCEPTABLE, cerr);
+            return Ok(res);
+        }, 
     };
     
     let res = hyper::body::to_bytes(body).await;
     let bytes = match res {
         Ok(_bytes) => _bytes,
-        Err(_) => return resp_400!("Invalid body"),
+        Err(e) => {
+            let cerr = crate::Error::new(format!("Invalid body: error:{}", e));
+            let res = utils::http::error_with_code(StatusCode::NOT_ACCEPTABLE, cerr);
+            return Ok(res);
+        },
     };
     let query = match std::str::from_utf8(&bytes) { 
         Ok(_query) => _query,
-        Err(_) => return resp_400!("Invalid UTF-8 sequence"),
+        Err(e) => {
+            let cerr = crate::Error::new(format!("Invalid UTF-8 sequence: error:{}", e));
+            let res = utils::http::error_with_code(StatusCode::NOT_ACCEPTABLE, cerr);
+            return Ok(res);
+        },
     };
-    resp_200!(controllers::index_search(index_name, query).await?)
+
+    let res = controllers::index_search(index_name, query).await;
+    match res {
+        Ok(result) => {
+            let res = utils::http::body_with_code(StatusCode::OK, result);
+            return Ok(res);
+        },
+        Err(e) => {
+            let cerr = crate::Error::new(format!("Invalid search request: error:{}", e));
+            let res = utils::http::error_with_code(StatusCode::NOT_ACCEPTABLE, cerr);
+            return Ok(res);
+        },
+    }
 }
 
 // GET /api/v1/:indexname/_stats
 pub async fn index_stats(req: Request<Body>) -> crate::Result<Response<Body>> {
     let index_name = req.param("indexname").unwrap();
-    resp_200!(controllers::index_stats(index_name).await?)
+    let con_res = controllers::index_stats(index_name).await;
+    let res = utils::http::body_with_code(StatusCode::OK, con_res);
+    Ok(res)
 }
