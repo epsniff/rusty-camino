@@ -28,8 +28,8 @@ pub async fn index_single(req: Request<Body>) -> crate::Result<Response<Body>> {
     let (parts, body) = req.into_parts();
     let path = parse_path(parts.uri.path());
     let index_name = match &path[..] {
-        [index_name, ..] => index_name,
-        [] => {
+        [_, index_name, ..] => index_name,
+        _ => {
             let cerr = crate::Error::new(format!("Failed to parse index name"));
             let res = utils::http::error_with_code(StatusCode::NOT_ACCEPTABLE, cerr);
             return Ok(res);
@@ -95,8 +95,8 @@ pub async fn index_search(req: Request<Body>) -> crate::Result<Response<Body>> {
     let (parts, body) = req.into_parts();
     let path = parse_path(parts.uri.path());
     let index_name = match &path[..] {
-        [index_name, ..] => index_name,
-        [] => {
+        [_, index_name, ..] => index_name,
+        _ => {
             let cerr = crate::Error::new(format!("Failed to parse index name"));
             let res = utils::http::error_with_code(StatusCode::NOT_ACCEPTABLE, cerr);
             return Ok(res);
