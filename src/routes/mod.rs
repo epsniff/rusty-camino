@@ -5,19 +5,7 @@ use hyper::{Body, Request, Response, StatusCode};
 use routerify::{Middleware, Router};
 use routerify_cors::enable_cors_all;
 
-mod api_server;
 mod indexer_server;
-
-pub fn api_router() -> Router<Body, crate::Error> {
-    Router::builder()
-        .middleware(Middleware::pre(logger_middleware))
-        .middleware(enable_cors_all())
-        .get("/", home_get)
-        .scope("/", api_server::router())
-        .err_handler(error_handler)
-        .build()
-        .unwrap()
-}
 
 pub fn indexer_router() -> Router<Body, crate::Error> {
     Router::builder()
