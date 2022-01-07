@@ -14,29 +14,21 @@ brew install rliebz/tusk/tusk
 
 ## Development
 
-Setup the project by installing all the required dev tools:
+Start the server:
 
 ```sh
-tusk setup
+cargo run --bin indexer
 ```
 
-Start the dev server:
+Create an index:
 
 ```sh
-tusk dev
+http POST localhost:3001/v1/foo2/_create
 ```
 
-Start the prod server:
+Index a document and query it back out:
 
 ```sh
-tusk start
+echo '{ "a_foo": "lydia is great", "d_foo": 4171997 }' | http POST localhost:3001/v1/foo2/_upsert
+echo 'a_foo:lydia' | http POST localhost:3001/v1/foo2/_search
 ```
-
-Deploy the server:
-
-```sh
-tusk deploy
-```
-
-Please refer to `tusk.yml` file for more commands.
-
