@@ -3,6 +3,10 @@
 // use rusty_camino::{startup, Result};
 
 fn main() {
+
+    let inserter = rusty_camino::sql_proc::InMemInserter::new();
+    let mut processor = rusty_camino::sql_proc::SQLProcessor{inserter};
+
     // startup::up().await.context("Failed to startup the server").unwrap();
     log::info!("rusty-camino CLI tools: help == 'if you actually wrote these tools, I'd be a lot more help!!!'");
     // I will some day, for now I'm using this as a playground...
@@ -18,7 +22,7 @@ fn main() {
       (1, 'Tom B. Test', 'Foo 21', 'Stavanger', '4006', \"Norway\"),
       (2, 'Jim J. Test', 'Foo 22', 'Stavanger', '5006', \"Norway\");";
 
-      match rusty_camino::sql_proc::process_sql(sql) {
+      match processor.process_sql(sql) {
         Ok(()) => {},
         Err(e) => log::error!("Error processing command: {}", e),
     }
