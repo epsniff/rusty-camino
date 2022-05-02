@@ -6,6 +6,10 @@ mod index;
 
 pub fn router() -> Router<Body, crate::Error> {
     Router::builder()
+        // POST /v1/_SQL
+        .post("/_sql", index::handlers::process_sql)
+        //
+        // DEPREATE MAYBE??
         // POST /v1/:indexname/_create
         .post("/:indexname/_create", index::handlers::index_create)
         // POST /v1/:indexname/_upsert

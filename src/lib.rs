@@ -16,6 +16,7 @@ pub mod startup;
 mod test_env;
 pub mod types;
 pub mod utils;
+pub mod sql_proc;
 
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -26,7 +27,6 @@ mod tests {
 
     #[tokio::test]
     async fn test_foo() {
-        setup_test_env!();
         assert_eq!(1, 1);
     }
 }
