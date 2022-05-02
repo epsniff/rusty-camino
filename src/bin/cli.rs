@@ -21,8 +21,10 @@ fn main() {
     VALUES 
       (1, 'Tom B. Test', 'Foo 21', 'Stavanger', '4006', \"Norway\"),
       (2, 'Jim J. Test', 'Foo 22', 'Stavanger', '5006', \"Norway\");";
+     
+    
 
-      match processor.process_sql(sql) {
+    match processor.process_sql(sql ) {
         Ok(()) => {},
         Err(e) => log::error!("Error processing command: {}", e),
     }

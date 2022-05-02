@@ -1,16 +1,15 @@
-use crate::Result;
 use sqlparser::ast::*;
 
 // sqlparser::ast::ObjectName
 // sqlparser::ast::Ident
 // sqlparser::ast::Query
-pub fn process_insert(table_name: ObjectName, columns: Vec<Ident>, source: Box<Query>) -> Result<()> {
+pub fn process_insert(table_name: &ObjectName, columns: &Vec<Ident>, source: &Box<Query>) -> crate::Result<()> {
     // println!("table  - {:?}", table_name);
     // for (idx, column) in columns.iter().enumerate() {
     //    println!(" - {} - {:?}", idx, column);
     // }
 
-    match source.body {
+    match &source.body {
         SetExpr::Values(Values(values)) => {
             for (row_id, row) in values.iter().enumerate() {
                 // print_type_of(row);
@@ -29,7 +28,12 @@ pub fn process_insert(table_name: ObjectName, columns: Vec<Ident>, source: Box<Q
     return Ok(());
 }
 
-fn process_insert_row(table_name: &ObjectName, columns: &Vec<Ident>, row_id: usize, row: &Vec<Expr>) -> Result<()> {
+fn process_insert_row(
+    table_name: &ObjectName,
+    columns: &Vec<Ident>,
+    row_id: usize,
+    row: &Vec<Expr>,
+) -> crate::Result<()> {
     println!(" {:?}", row);
     for (i, val) in row.iter().enumerate() {
         let name = &columns[i].value;
