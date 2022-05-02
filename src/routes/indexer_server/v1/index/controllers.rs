@@ -74,25 +74,8 @@ pub async fn index_create(idx: &str) -> crate::Result<String> {
 
 pub async fn index_single(idx: &str, doc: &str) -> crate::Result<String> {
     let can = canister();
-    let index_res = can.get_shard(idx);
-    let index;
-    match index_res {
-        Ok(index_tmp) => {
-            index = index_tmp;
-        }
-        Err(e) => return Err(crate::Error::new(format!("Failed to get shard {:?}", e))),
-    }
-
-    let res = index.add_document(doc).await;
-    match res {
-        Ok(()) => {
-            return Ok(format!(
-                "index successful for: {}",
-                idx,
-            ))
-        },
-        Err(e) => return Err(crate::Error::new(format!("Failed to add doc to index {:?}", e))),
-    }
+    can.index_single(idx, doc).await?;
+    Ok(format!("index successful for: {}", idx))
 }
 
 pub async fn index_search(idx: &str, query: &str) -> crate::Result<String> {
